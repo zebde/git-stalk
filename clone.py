@@ -28,8 +28,8 @@ def _parse_args():
     return opts
 
 
-def _subdirpath(d):
-    return filter(os.path.isdir, [os.path.join(d, f) for f in os.listdir(d)])
+def _subdirpath(root_dir):
+    return filter(os.path.isdir, [os.path.join(root_dir, f) for f in os.listdir(root_dir)])
 
 
 def _get_online(target, output):
