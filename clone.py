@@ -28,11 +28,11 @@ def _parse_args():
     return opts
 
 
-def _SubDirPath(d):
+def _subdirpath(d):
     return filter(os.path.isdir, [os.path.join(d, f) for f in os.listdir(d)])
 
 
-def _getOnline(target, output):
+def _get_online(target, output):
     cnt = 1
     print("[+] Going online")
     while cnt > 0:
@@ -46,28 +46,28 @@ def _getOnline(target, output):
                 print("Rate limit reached")
                 cnt = -10
             else:
-                for y in js_data:
-                    git_url = y["clone_url"]
-                    out_name = os.path.join(output, y["name"])
-                    _getRepo(out_name, git_url, "online")
+                for data in js_data:
+                    git_url = data["clone_url"]
+                    out_name = os.path.join(output, data["name"])
+                    _get_repo(out_name, git_url, "online")
 
         cnt = cnt+1
 
 
-def _getRepo(repo_name, git_url, connect):
+def _get_repo(repo_name, git_url, connect):
     if os.path.isdir(repo_name):
         print("[+] %s already exists" % repo_name)
         repo = Repo(repo_name)
         if connect is "online":
             repo.remotes.origin.pull()
         log = repo.git.log('--pretty=%ae|%an').splitlines()
-        for x in log:
-            y = x.split('|')
-            d = {
-                'user': y[1],
-                'email': y[0]
+        for line in log:
+            item = line.split('|')
+            tmp_list = {
+                'user': item[1],
+                'email': item[0]
             }
-            OBJS.append(d)
+            OBJS.append(tmp_list)
     else:
         print(git_url)
         Repo.clone_from(git_url, repo_name)
@@ -76,11 +76,11 @@ def _getRepo(repo_name, git_url, connect):
 def scrape_git(target, directory, connect):
     """Scrape git repositories for identities."""
     if connect is "offline":
-        nn = _SubDirPath(directory)
-        for name in nn:
-            _getRepo(name, "url", connect)
+        subdirs = _subdirpath(directory)
+        for name in subdirs:
+            _get_repo(name, "url", connect)
     elif connect is "online":
-        _getOnline(target, directory)
+        _get_online(target, directory)
     sets = [dict(y) for y in set(tuple(x.items()) for x in OBJS)]
     print("[+] Scraping identified " + str(len(sets)) + " identities")
     return json.dumps(sets, indent=4)
